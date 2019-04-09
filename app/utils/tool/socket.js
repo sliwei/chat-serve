@@ -9,8 +9,6 @@ const fs = require('fs');
 const conf = require('../../config');
 const {BstuRoom, BstuRoomMessage, BstuUser, Sequelize} = require("../../models");
 
-socketIo.set('origins', '*:*');
-
 var IO = {};
 
 // 特殊字符转义
@@ -46,6 +44,7 @@ function srever(app) {
     server = http.Server(app.callback()).listen(conf.socket_port);
   }
   let io = socketIo(server);
+  io.set('origins', '*:*');
   IO = io;
   let number = 0, ids = [], roomInfo = [];
   let userList = [];
