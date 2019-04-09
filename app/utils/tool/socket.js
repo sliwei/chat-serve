@@ -43,8 +43,7 @@ function srever(app) {
   } else {
     server = http.Server(app.callback()).listen(conf.socket_port);
   }
-  let io = socketIo(server);
-  io.set('origins', '*:*');
+  let io = socketIo(server, {origins: '*:*', transports: ['websocket', 'polling', 'flashsocket']});
   IO = io;
   let number = 0, ids = [], roomInfo = [];
   let userList = [];
