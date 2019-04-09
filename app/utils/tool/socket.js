@@ -9,6 +9,8 @@ const fs = require('fs');
 const conf = require('../../config');
 const {BstuRoom, BstuRoomMessage, BstuUser, Sequelize} = require("../../models");
 
+socketIo.set('origins', '*:*');
+
 var IO = {};
 
 // 特殊字符转义
