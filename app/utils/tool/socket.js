@@ -39,9 +39,9 @@ function srever(app) {
       ca: fs.readFileSync(conf.ssh_options.ca),
       cert: fs.readFileSync(conf.ssh_options.cert)
     };
-    server = https.Server(options, app.callback()).listen(conf.socket_port);
+    server = https.createServer(options, app.callback()).listen(conf.socket_port);
   } else {
-    server = http.Server(app.callback()).listen(conf.socket_port);
+    server = http.createServer(app.callback()).listen(conf.socket_port);
   }
   let io = socketIo(server, {origins: '*:*', transports: ['websocket', 'polling', 'flashsocket']});
   IO = io;
