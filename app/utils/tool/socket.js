@@ -47,11 +47,15 @@ function socket(app) {
   IO = io;
   let number = 0, ids = [], roomInfo = [];
   let userList = [];
-  io
-    .of('/chat-namespace')
-    .on('connection', async function (socket) {
+  io = io.of('/chat-namespace')
+  io.on('connection', async function (socket) {
 
-    // console.log(socket.id);
+      let socketId = ''
+      if (socket.id) {
+        socketId = socket.id.split('#').pop()
+      }
+
+    // console.log(socketId);
 
     // 返回在线列表
     const sendList = () => {
@@ -65,9 +69,9 @@ function socket(app) {
           head_img: item.head_img,
         })
       });
-      console.log(retList);
+      console.log('retList', retList);
       let listTxt = JSON.stringify(retList);
-      io.sockets.emit('all', 1, listTxt);
+      io.emit('all', 1, listTxt);
     };
 
     // 上线后进入原有房间
@@ -84,7 +88,7 @@ function socket(app) {
     };
 
     socket.on('disconnect', function (d) {
-      // console.log(socket.id);
+      // console.log(socketId);
       // console.log(d);
     });
 
@@ -110,7 +114,7 @@ function socket(app) {
         if (item.user === user) {
           sta = true;
 
-          item.id = socket.id;
+          item.id = socketId;
           item.socket = socket;
 
         }
@@ -119,14 +123,14 @@ function socket(app) {
       // 加入在线列表
       if (!sta) {
         userList.push({
-          id: socket.id,
+          id: socketId,
           user: user,
           name: name,
           socket: socket,
           head_img: dat.head_img,
           u_id: dat.id,
         });
-        // io.sockets.emit('all', 0, `${name}进入了大厅,块找他聊天吧!`);
+        // io.emit('all', 0, `${name}进入了大厅,块找他聊天吧!`);
         // 推送全局在线列表
 
         joinRoom(user);
@@ -241,15 +245,15 @@ function socket(app) {
     socket.on('disconnect', res => {
       let name = '', user = '', leaveList = [];
       userList = userList.filter(item => {
-        if (item.id === socket.id) {
+        if (item.id === socketId) {
           // 名字作为下线提示
           name = item.name;
           // 获取账号，做为退出房间用
           user = item.user;
         }
-        return item.id !== socket.id;
+        return item.id !== socketId;
       });
-      name && io.sockets.emit('all', 0, `${name}下线了!`);
+      name && io.emit('all', 0, `${name}下线了!`);
       name && sendList();
 
       for (let key in roomInfo) {
@@ -309,7 +313,7 @@ function socket(app) {
     //
     //
     // // 连接人数
-    // let socket_id = socket.id || undefined;
+    // let socket_id = socketId || undefined;
     // ids.push(socket_id);
     // number++;
     // let u = await sql()
