@@ -12,7 +12,7 @@ const {resolve} = require('path');
 const swagger = require('swagger-injector');
 const mysql = require('mysql2');
 
-const {srever} = require('./utils/tool/socket');
+const {socket} = require('./utils/tool/socket');
 const conf = require('./config');
 const index = require('./routes');
 
@@ -160,6 +160,6 @@ app.on('error', (err, ctx) => {
 });
 
 // socket连接
-srever(app);
+const server = socket(app)
 
-module.exports = app;
+module.exports = server;

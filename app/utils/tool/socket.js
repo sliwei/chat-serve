@@ -30,7 +30,7 @@ function set() {
 }
 
 
-function srever(app) {
+function socket(app) {
   // https conf
   let options = {}, server;
   if (conf.socket_safe) {
@@ -39,15 +39,17 @@ function srever(app) {
       ca: fs.readFileSync(conf.ssh_options.ca),
       cert: fs.readFileSync(conf.ssh_options.cert)
     };
-    server = https.createServer(options, app.callback()).listen(conf.socket_port);
+    server = https.createServer(options, app.callback());
   } else {
-    server = http.createServer(app.callback()).listen(conf.socket_port);
+    server = http.createServer(app.callback());
   }
-  let io = socketIo(server, {origins: '*:*', transports: ['websocket', 'polling', 'flashsocket']});
+  let io = socketIo(server, {path: '/chat-ws', origins: '*:*', transports: ['websocket', 'polling', 'flashsocket']});
   IO = io;
   let number = 0, ids = [], roomInfo = [];
   let userList = [];
-  io.on('connection', async function (socket) {
+  io
+    .of('/chat-namespace')
+    .on('connection', async function (socket) {
 
     // console.log(socket.id);
 
@@ -353,9 +355,10 @@ function srever(app) {
     // });
     // ...
   });
+  return server
 }
 
 module.exports = {
-  srever: srever,
+  socket: socket,
   set: set
 };
