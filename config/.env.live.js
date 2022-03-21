@@ -2,7 +2,9 @@
 
 module.exports = {
   env: 'live',
-  api_url: {},
+  api_url: {
+    API_CORE: 'http://core-serve:3000'
+  },
   db: {
     database: '##DATABASE##',
     username: '##USERNAME##',

@@ -6,7 +6,7 @@ const env = require(`../../config/.env.${process.env.ENV}.js`)
 const config = {
   mode: process.env.MODE, // development || production
   port: 3000, // 端口
-  tokenObs: 'chat-server', // token混淆码
+  tokenObs: 'chat-serve', // token混淆码
   verificationObs: 'chat-serve', // 验证码混淆码
   verificationSta: true, // 启用验证码
   cookieOptions: {

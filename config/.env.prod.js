@@ -2,7 +2,9 @@
 
 module.exports = {
   env: 'prod',
-  api_url: {},
+  api_url: {
+    API_CORE: 'http://core:3000'
+  },
   db: {
     database: 'db',
     username: 'dbuser',
