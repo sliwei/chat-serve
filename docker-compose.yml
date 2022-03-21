@@ -10,8 +10,6 @@ services:
       - PASSWORD=password
       - HOST=locashot
       - PORT=3306
-      - GT_ID=xx
-      - GT_KEY=xx
     networks:
       - proxy
 
