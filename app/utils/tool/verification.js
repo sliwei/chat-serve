@@ -1,6 +1,6 @@
-const conf = require('../../config');
-const md5 = require('js-md5');
-const {CustomError, HttpError} = require('./error');
+const conf = require('../../config')
+const md5 = require('js-md5')
+const { CustomError, HttpError } = require('./error')
 
 /**
  * 检测验证码正确性
@@ -10,18 +10,18 @@ const {CustomError, HttpError} = require('./error');
  */
 const checkCode = async (ctx, next) => {
   if (conf.verificationSta) {
-    let code = ctx.request.body.code || '';
-    let key = ctx.request.body.key;
+    let code = ctx.request.body.code || ''
+    let key = ctx.request.body.key
     if (ctx.request.method === 'GET') {
-      code = ctx.params.code || '';
+      code = ctx.params.code || ''
     }
     // let key = ctx.cookie.get('code2');
-    let codeSta = false;
+    let codeSta = false
     if (code) {
-      let getCode = `${conf.verificationObs}${code.toLowerCase()}`;
-      let md5Code = md5(getCode);
+      let getCode = `${conf.verificationObs}${code.toLowerCase()}`
+      let md5Code = md5(getCode)
       if (code && md5Code === key) {
-        codeSta = true;
+        codeSta = true
       }
     }
     if (!codeSta) {
@@ -30,7 +30,7 @@ const checkCode = async (ctx, next) => {
   }
   // !('check' in ctx.res) ? ctx.res.check = {} : null;
   // ctx.res.check.code = codeSta;
-  await next();
-};
+  await next()
+}
 
-module.exports = {checkCode};
+module.exports = { checkCode }

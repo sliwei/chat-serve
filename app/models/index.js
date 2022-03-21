@@ -1,12 +1,12 @@
-const {sequelize, Sequelize} = require('../utils/sequelize');
+const { sequelize, Sequelize } = require('../utils/sequelize')
 
-const bstu_room = require('./bstu_room');
-const bstu_room_message = require('./bstu_room_message');
-const bstu_user = require('./bstu_user');
+const bstu_room = require('./bstu_room')
+const bstu_room_message = require('./bstu_room_message')
+const bstu_user = require('./bstu_user')
 
-const BstuRoom = bstu_room(sequelize, Sequelize);
-const BstuRoomMessage = bstu_room_message(sequelize, Sequelize);
-const BstuUser = bstu_user(sequelize, Sequelize);
+const BstuRoom = bstu_room(sequelize, Sequelize)
+const BstuRoomMessage = bstu_room_message(sequelize, Sequelize)
+const BstuUser = bstu_user(sequelize, Sequelize)
 
 /**
  * Associations - 关联
@@ -16,12 +16,12 @@ const BstuUser = bstu_user(sequelize, Sequelize);
  * belongsToMany 多对多关联用于将源与多个目标相连接。 此外，目标也可以连接到多个源
  */
 
-BstuRoomMessage.belongsTo(BstuUser, {as: 'user', foreignKey: 'u_id'}); // 聊天记录 -> 用户(评论人)
+BstuRoomMessage.belongsTo(BstuUser, { as: 'user', foreignKey: 'u_id' }) // 聊天记录 -> 用户(评论人)
 
 module.exports = {
   BstuRoom,
   BstuRoomMessage,
   BstuUser,
   sequelize,
-  Sequelize,
-};
+  Sequelize
+}

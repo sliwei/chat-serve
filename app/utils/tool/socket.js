@@ -2,95 +2,93 @@
  * Created by awei on 2017/3/26.
  * socketIo
  */
-const https = require('https');
-const http = require('http');
-const socketIo = require('socket.io');
-const fs = require('fs');
-const conf = require('../../config');
-const {BstuRoom, BstuRoomMessage, BstuUser, Sequelize} = require("../../models");
+const https = require('https')
+const http = require('http')
+const socketIo = require('socket.io')
+const fs = require('fs')
+const conf = require('../../config')
+const {
+  BstuRoom,
+  BstuRoomMessage,
+  BstuUser,
+  Sequelize
+} = require('../../models')
 
-var IO = {};
+var IO = {}
 
 // 特殊字符转义
 function ClearBr(key) {
-  key = key.replace(/<\/?.+?>/g, "");
-  key = key.replace(/[\r\n]/g, "");
-  key = key.replace(/\s+/g, "");
-  key = key.replace(/\'/g, "\'");
-  key = key.replace(/\"/g, "\\\"");
-  return key;
+  key = key.replace(/<\/?.+?>/g, '')
+  key = key.replace(/[\r\n]/g, '')
+  key = key.replace(/\s+/g, '')
+  key = key.replace(/\'/g, "'")
+  key = key.replace(/\"/g, '\\"')
+  return key
 }
 
 async function sql() {
-  return await BstuUser.findAll();
+  return await BstuUser.findAll()
 }
 
 function set() {
   return IO
 }
 
-
 function socket(app) {
-  // https conf
-  let options = {}, server;
-  if (conf.socket_safe) {
-    options = {
-      key: fs.readFileSync(conf.ssh_options.key),
-      ca: fs.readFileSync(conf.ssh_options.ca),
-      cert: fs.readFileSync(conf.ssh_options.cert)
-    };
-    server = https.createServer(options, app.callback());
-  } else {
-    server = http.createServer(app.callback());
-  }
-  let io = socketIo(server, {path: '/chat-ws', origins: '*:*', transports: ['websocket', 'polling', 'flashsocket']});
-  IO = io;
-  let number = 0, ids = [], roomInfo = [];
-  let userList = [];
+  const server = http.createServer(app.callback())
+  let io = socketIo(server, {
+    path: '/chat-ws',
+    origins: '*:*',
+    transports: ['websocket', 'polling', 'flashsocket']
+  })
+  IO = io
+  let number = 0,
+    ids = [],
+    roomInfo = []
+  let userList = []
   io = io.of('/chat-namespace')
   io.on('connection', async function (socket) {
-
-      let socketId = ''
-      if (socket.id) {
-        socketId = socket.id.split('#').pop()
-      }
+    let socketId = ''
+    if (socket.id) {
+      socketId = socket.id.split('#').pop()
+    }
 
     // console.log(socketId);
 
     // 返回在线列表
     const sendList = () => {
       // console.log(userList);
-      let retList = [];
-      userList.map(item => {
+      let retList = []
+      userList.map((item) => {
         retList.push({
           id: item.id,
           user: item.user,
           name: item.name,
-          head_img: item.head_img,
+          head_img: item.head_img
         })
-      });
-      console.log('retList', retList);
-      let listTxt = JSON.stringify(retList);
-      io.emit('all', 1, listTxt);
-    };
+      })
+      console.log('retList', retList)
+      let listTxt = JSON.stringify(retList)
+      io.emit('all', 1, listTxt)
+    }
 
     // 上线后进入原有房间
-    const joinRoom = user => {
-      let joinList = [];
+    const joinRoom = (user) => {
+      let joinList = []
       for (let key in roomInfo) {
-        key.indexOf(user) >= 0 && (joinList.push(key));
+        key.indexOf(user) >= 0 && joinList.push(key)
       }
       // 进入所有房间
-      joinList.map(item => {
-        socket.join(item);
-        user && roomInfo[item].push(user);
-      });
-    };
+      joinList.map((item) => {
+        socket.join(item)
+        user && roomInfo[item].push(user)
+      })
+    }
 
     socket.on('disconnect', function (d) {
       // console.log(socketId);
       // console.log(d);
-    });
+    })
 
     // let roomID = '', user = '';
 
@@ -99,26 +97,25 @@ function socket(app) {
       // console.log(user, name);
 
       if (!user || !name) {
-        return false;
+        return false
       }
 
       // 查询头像昂
       let dat = await BstuUser.findOne({
-        where: {user: user},
+        where: { user: user },
         attributes: ['head_img', 'id']
-      });
+      })
 
       // 在线检测
-      let sta = false;
-      userList.map(item => {
+      let sta = false
+      userList.map((item) => {
         if (item.user === user) {
-          sta = true;
+          sta = true
 
-          item.id = socketId;
-          item.socket = socket;
-
+          item.id = socketId
+          item.socket = socket
         }
-      });
+      })
 
       // 加入在线列表
       if (!sta) {
@@ -128,81 +125,83 @@ function socket(app) {
           name: name,
           socket: socket,
           head_img: dat.head_img,
-          u_id: dat.id,
-        });
+          u_id: dat.id
+        })
         // io.emit('all', 0, `${name}进入了大厅,块找他聊天吧!`);
         // 推送全局在线列表
 
-        joinRoom(user);
+        joinRoom(user)
       } else {
         // socket.emit('tips', 0, '你已在其他地方登陆,已为你切换')
       }
 
-      sendList();
-    });
+      sendList()
+    })
 
     // 挤线
     socket.on('squeeze', (user, name) => {
       // socket.leave(roomID); 离开房间
       // socket.join(roomID); 进入房间
-    });
+    })
 
     // 进入房间、发送房间信息 1-1 1-n
     socket.on('room', async (roomID, user, msg) => {
       // 验证如果用户不在房间内则不给发送
-      let other = [user], have = false;
+      let other = [user],
+        have = false
       if (roomID.indexOf('+') >= 0) {
-        other = roomID.split('+');
+        other = roomID.split('+')
         if (roomInfo[`${other[0]}+${other[1]}`]) {
-          have = true;
-          roomID = `${other[0]}+${other[1]}`;
+          have = true
+          roomID = `${other[0]}+${other[1]}`
         }
         if (roomInfo[`${other[1]}+${other[0]}`]) {
-          have = true;
-          roomID = `${other[1]}+${other[0]}`;
+          have = true
+          roomID = `${other[1]}+${other[0]}`
         }
       }
       if (!have) {
         if (!roomInfo[roomID]) {
-          roomInfo[roomID] = [];
+          roomInfo[roomID] = []
           // 创建房间
         }
         if (other[0] && roomInfo[roomID].indexOf(user) === -1) {
-          roomInfo[roomID].push(user);
-          socket.join(roomID);
+          roomInfo[roomID].push(user)
+          socket.join(roomID)
         }
         if (other[1] && roomInfo[roomID].indexOf(other[1]) === -1) {
-          userList.map(item => {
+          userList.map((item) => {
             if (item.user === other[1]) {
-              roomInfo[roomID].push(other[1]);
-              item.socket.join(roomID);
+              roomInfo[roomID].push(other[1])
+              item.socket.join(roomID)
             }
-          });
+          })
         }
         if (!user || roomInfo[roomID].indexOf(user) === -1) {
-          return false;
+          return false
         }
       } else {
-        roomInfo[roomID].indexOf(user) === -1 && (roomInfo[roomID].push(user), socket.join(roomID));
+        roomInfo[roomID].indexOf(user) === -1 &&
+          (roomInfo[roomID].push(user), socket.join(roomID))
       }
-      console.log(roomInfo);
-      console.log(roomID, user, msg);
-      io.to(roomID).emit('roomMessage', user, msg);
+      console.log(roomInfo)
+      console.log(roomID, user, msg)
+      io.to(roomID).emit('roomMessage', user, msg)
 
       // sql ----
 
       // 插入一条聊天记录
       const insert = (r_id) => {
-        console.log(userList);
-        let u_id = userList.filter(item => item.user === user)[0].u_id;
+        console.log(userList)
+        let u_id = userList.filter((item) => item.user === user)[0].u_id
         // db.op(`insert into bstu_room_message(r_id, type, cont, u_id) values(${r_id}, 0, '${msg}', ${u_id})`)
         BstuRoomMessage.create({
           r_id: r_id,
           type: 0,
           cont: msg,
-          u_id: u_id,
+          u_id: u_id
         })
-      };
+      }
 
       // 查询房间信息和(没房间就创建一个房间)
       // db.op(`select id from bstu_room where name = '${roomID}'`).then(res => {
@@ -217,58 +216,60 @@ function socket(app) {
       // });
 
       let room = await BstuRoom.findOne({
-        where: {name: roomID}
-      });
+        where: { name: roomID }
+      })
       if (room) {
-        insert(room.id);
+        insert(room.id)
       } else {
         let newRoom = await BstuRoom.create({
           name: roomID
-        });
+        })
         insert(newRoom.id)
       }
 
       // sql ----
-    });
+    })
 
     // 加入房间
     socket.on('join', (roomID, user, name) => {
       if (!roomInfo[roomID]) {
-        roomInfo[roomID] = [];
+        roomInfo[roomID] = []
       }
-      roomInfo[roomID].push(user);
-      socket.join(roomID);
-      io.to(roomID).emit('sys', name + '加入了房间', roomInfo[roomID]);
-    });
+      roomInfo[roomID].push(user)
+      socket.join(roomID)
+      io.to(roomID).emit('sys', name + '加入了房间', roomInfo[roomID])
+    })
 
     // 离线掉线下线
-    socket.on('disconnect', res => {
-      let name = '', user = '', leaveList = [];
-      userList = userList.filter(item => {
+    socket.on('disconnect', (res) => {
+      let name = '',
+        user = '',
+        leaveList = []
+      userList = userList.filter((item) => {
         if (item.id === socketId) {
           // 名字作为下线提示
-          name = item.name;
+          name = item.name
           // 获取账号，做为退出房间用
-          user = item.user;
+          user = item.user
         }
-        return item.id !== socketId;
-      });
-      name && io.emit('all', 0, `${name}下线了!`);
-      name && sendList();
+        return item.id !== socketId
+      })
+      name && io.emit('all', 0, `${name}下线了!`)
+      name && sendList()
 
       for (let key in roomInfo) {
-        key.indexOf(user) >= 0 && (leaveList.push(key));
+        key.indexOf(user) >= 0 && leaveList.push(key)
       }
 
-      console.log('leaveList', leaveList);
+      console.log('leaveList', leaveList)
 
       // 离开所有房间
-      leaveList.map(item => {
-        socket.leave(item);
-        user && roomInfo[item].splice(roomInfo[item].indexOf(user), 1);
-      });
-      console.log('roomInfo', roomInfo);
-    });
+      leaveList.map((item) => {
+        socket.leave(item)
+        user && roomInfo[item].splice(roomInfo[item].indexOf(user), 1)
+      })
+      console.log('roomInfo', roomInfo)
+    })
 
     //
     // console.log(socket.request.headers);
@@ -358,11 +359,11 @@ function socket(app) {
     //   io.sockets.emit('message', message);
     // });
     // ...
-  });
+  })
   return server
 }
 
 module.exports = {
   socket: socket,
   set: set
-};
+}
