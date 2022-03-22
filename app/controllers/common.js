@@ -1,6 +1,6 @@
 const request = require('request')
 const fs = require('fs')
-const conf = require('../../config')
+const conf = require('../config')
 
 /**
  * 单张图片上传
