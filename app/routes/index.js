@@ -69,7 +69,7 @@ router.get('/chat/client/chat/chat_list', checkToken, chat_list)
 router.get('/chat/test/get', get)
 router.post('/chat/test/post', post)
 // common
-router.post('/chat/common/upload', checkToken, upload)
+router.post('/chat/common/upload', upload)
 // login
 router.get('/chat/manage/login/info', checkToken, info)
 router.post('/chat/manage/login/login', checkCode, parameter, login)
