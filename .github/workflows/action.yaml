@@ -56,8 +56,6 @@ jobs:
             # 登录阿里云镜像仓库
             docker login --username=wangxiaoshou666 --password=${{ secrets.DOCKER_PASSWORD }} registry.cn-shenzhen.aliyuncs.com
             docker pull registry.cn-shenzhen.aliyuncs.com/sliwei/chat-serve:${{ steps.date.outputs.tag }}
-            docker compose stop
-            docker compose rm -f
             export TAG=${{ steps.date.outputs.tag }}
             echo $TAG
             printf "${{ secrets.DOCKER_COMPOSE_YML }}" > docker-compose.yml
