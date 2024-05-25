@@ -1,5 +1,7 @@
 # chat-serve
 
+[![deploy](https://github.com/sliwei/chat-serve/actions/workflows/action.yaml/badge.svg)](https://github.com/sliwei/chat-serve/actions/workflows/action.yaml)
+
 > 聊天服务中心
 
 ## Dev Setup
